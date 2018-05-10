@@ -1,0 +1,32 @@
+{
+  "name": "ks-cache",
+  "version": "1.0.0",
+  "description": "A middle tier caching module for caching data.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests"
+  },
+  "keywords": [
+    "cache",
+    "kano",
+    "services"
+  ],
+  "author": "russ@kano.me",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^4.18.1",
+    "eslint-config-kano": "^0.1.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-html": "^4.0.2",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "mocha": "^5.0.0",
+    "sinon": "^4.2.2",
+    "sinon-chai": "^2.14.0"
+  },
+  "dependencies": {
+    "nedb-promise": "^2.0.1"
+  }
+}
