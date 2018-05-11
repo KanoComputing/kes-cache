@@ -2,18 +2,25 @@
  * cache/index.js
  * Entry point to cache module
  */
-const Cache = require('./lib/CacheInstance');
+const CI = require('./lib/CacheInstance');
 
-const caches = {};
+function Cache(options) {
+    const caches = {};
+    const gc = function getCache(cacheName) {
+        const cache = this._caches[cacheName];
+        if (cache) {
+            return cache;
+        }
+        throw new Error(`No model ${cacheName} registered`);
+    }.bind({ _caches: caches });
+    gc._options = options;
+    gc._caches = caches;
+    Object.setPrototypeOf(gc, Cache.prototype);
+    return gc;
+}
 
-module.exports = function getCache(cacheName) {
-    const cache = caches[cacheName];
-    if (cache) {
-        return cache;
-    }
-    throw new Error(`No model ${cacheName} registered`);
+Cache.prototype.create = function createCache(cacheName, options) {
+    this._caches[cacheName] = new CI(cacheName, options);
 };
 
-module.exports.create = function createCache(cacheName) {
-    caches[cacheName] = new Cache(cacheName);
-};
+module.exports = Cache;
