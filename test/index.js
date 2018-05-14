@@ -1,4 +1,4 @@
-/* global describe it */
+/* global describe it beforeEach */
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable func-names */
 const assert = require('chai').assert;
@@ -6,9 +6,33 @@ const Cache = require('../index');
 const CI = require('../lib/CacheInstance');
 
 describe('Cache', function () {
-    describe('Cache creation test', function () {
-        const cache = new Cache();
+    const cache = new Cache();
+    const udata = [{
+        id: 1,
+        username: 'user1',
+        roles: [],
+        joined: '2018-04-19T08:51:57.981149',
+        modified: '2018-04-19T08:51:57.981149',
+        bio: 'Hi, see my creations!',
+        avatar: {},
+        following: [567, 654, 23, 16],
+        followers: [16, 278, 480, 572],
+    }, {
+        id: 2,
+        username: 'user2',
+        roles: [],
+        joined: '2018-04-19T08:51:57.981149',
+        modified: '2018-04-19T08:51:57.981149',
+        bio: "Hi, I'm here too!",
+        avatar: {},
+        following: [567, 654, 23, 16],
+        followers: [16, 278, 480, 572],
+    }];
+    beforeEach(async function () {
         cache.create('Users');
+        await cache('Users').add(JSON.parse(JSON.stringify(udata)));
+    });
+    describe('Cache creation test', function () {
         it('returns a created cache by label', function () {
             assert(cache('Users') instanceof CI);
         });
@@ -27,41 +51,102 @@ describe('Cache', function () {
         });
     });
     describe('Add to cache', function () {
-        const udata = [{
-            id: 1,
-            username: 'user1',
-            roles: [],
-            joined: '2018-04-19T08:51:57.981149',
-            modified: '2018-04-19T08:51:57.981149',
-            bio: 'Hi, see my creations!',
-            avatar: {},
-            following: [567, 654, 23, 16],
-            followers: [16, 278, 480, 572],
-        }, {
-            id: 2,
-            username: 'user2',
-            roles: [],
-            joined: '2018-04-19T08:51:57.981149',
-            modified: '2018-04-19T08:51:57.981149',
-            bio: "Hi, I'm here too!",
-            avatar: {},
-            following: [567, 654, 23, 16],
-            followers: [16, 278, 480, 572],
-        }];
         it('should store data to a cache', async function () {
-            const cache = new Cache();
-            cache.create('Users');
-            await cache('Users').add(udata);
             const getData = await cache('Users')._cache.findOne({ id: 1 });
             assert.deepInclude(getData, udata[0]);
         });
-        it('should return data that is stored', async function () {
-            const cache = new Cache();
-            cache.create('Users');
-            await cache('Users').add(udata);
+        it('should return, by id, data that is stored', async function () {
             const getData = await cache('Users').get({ id: 1 });
-            assert.deepInclude(getData, udata[0]);
+            assert.deepEqual(getData, udata[0]);
+        });
+        it('should return, by username, data that is stored', async function () {
+            const getData = await cache('Users').get({ username: 'user1' });
+            assert.deepEqual(getData, udata[0]);
+        });
+        it('should return null if no data is stored for that username', async function () {
+            const getData = await cache('Users').get({ username: 'user3' });
+            assert.isNull(getData);
+        });
+        it('should return an array of data that is stored if get by id list', async function () {
+            const getData = await cache('Users').get({ id: [1, 2, 3] });
+            assert.isArray(getData);
+            assert.sameDeepMembers(getData, udata);
+        });
+        it('should return an array of data if list contains ids that do and don\'t exists', async function () {
+            const getData = await cache('Users').get({ id: [1, 2, 3] });
+            assert.isArray(getData);
+            assert.sameDeepMembers(getData, udata);
+        });
+        it('should return an empty array if no data is stored for that list of ids', async function () {
+            const getData = await cache('Users').get({ id: [3, 4, 5] });
+            assert.isEmpty(getData);
+        });
+        it('should return an array of data that is stored if get by username list', async function () {
+            const getData = await cache('Users').get({ username: ['user1', 'user2'] });
+            assert.isArray(getData);
+            assert.sameDeepMembers(getData, udata);
+        });
+        it('should return an empty array if no data is stored for that list of usernames', async function () {
+            const getData = await cache('Users').get({ username: ['user3', 'user4'] });
+            assert.isEmpty(getData);
+        });
+    });
+    describe('Update cache', function () {
+        it('should update a single property of a single object', async function () {
+            await cache('Users').update({ username: 'user1' }, { bio: 'I create art!' });
+            const getData = await cache('Users').get({ username: 'user1' });
+            assert.equal(getData.bio, 'I create art!');
+        });
+        it('should update a single property of a set of objects', async function () {
+            await cache('Users').update({ username: ['user1', 'user2'] }, { bio: 'I create art!' });
+            const getData = await cache('Users').get({ username: ['user1', 'user2'] });
+            assert.equal(getData[0].bio, 'I create art!');
+            assert.equal(getData[1].bio, 'I create art!');
+        });
+        it('should update multiple properties of a single object', async function () {
+            const updateData = {
+                bio: 'I create art!',
+                avatar: { head: 'happy' },
+            };
+            await cache('Users').update({ username: 'user1' }, updateData);
+            const getData = await cache('Users').get({ username: 'user1' });
+            assert.equal(getData.bio, 'I create art!');
+            assert.equal(getData.avatar.head, 'happy');
+        });
+        it('should update multiple properties of a set of objects', async function () {
+            const updateData = {
+                bio: 'I create art!',
+                avatar: { head: 'happy' },
+            };
+            await cache('Users').update({ username: ['user1', 'user2'] }, updateData);
+            const getData = await cache('Users').get({ username: ['user1', 'user2'] });
+            assert.equal(getData[0].bio, 'I create art!');
+            assert.equal(getData[0].avatar.head, 'happy');
+            assert.equal(getData[1].bio, 'I create art!');
+            assert.equal(getData[1].avatar.head, 'happy');
+        });
+        it('should update an array property of a single object', async function () {
+            await cache('Users').pushToArray({ username: 'user1' }, { followers: 888 });
+            const getData = await cache('Users').get({ username: 'user1' });
+            assert.include(getData.followers, 888, 'followers contains new id');
+        });
+        it('should update an array property of a single object only if item does not exist in array', async function () {
+            await cache('Users').addToSet({ username: 'user1' }, { followers: 888 });
+            await cache('Users').addToSet({ username: 'user1' }, { followers: 888 });
+            const getData = await cache('Users').get({ username: 'user1' });
+            assert.include(getData.followers, 888, 'followers contains new id');
+            const compareArray = JSON.parse(JSON.stringify(udata[0].followers));
+            compareArray.push(888);
+            assert.deepEqual(getData.followers, compareArray, 'followers contains new id');
+        });
+        it('should replace a single object', async function () {
+            const currObj = await cache('Users')._cache.findOne({ id: 1 });
+            const currObjId = currObj._id;
+            const newObj = { username: 'user3', bio: 'I create art!' };
+            await cache('Users').replace({ id: 1 }, newObj);
+            const getData = await cache('Users').get({ _id: currObjId });
+            assert.notDeepEqual(getData, udata[0]);
+            assert.deepEqual(getData, newObj);
         });
     });
 });
-
