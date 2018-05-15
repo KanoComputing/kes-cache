@@ -149,4 +149,52 @@ describe('Cache', function () {
             assert.deepEqual(getData, newObj);
         });
     });
+    describe('Remove from cache', function () {
+        it('should remove a single object from the cache', async function () {
+            let getData = await cache('Users').get({ id: 1 });
+            assert.deepEqual(getData, udata[0], 'record 1 exists');
+            let getData2 = await cache('Users').get({ id: 2 });
+            assert.deepEqual(getData2, udata[1], 'record 2 exists');
+
+            await cache('Users').remove({ id: 1 });
+
+            getData = await cache('Users').get({ id: 1 });
+            assert.isNull(getData, 'record 1 is removed');
+            getData2 = await cache('Users').get({ id: 2 });
+            assert.deepEqual(getData2, udata[1], 'record 2 still exists');
+        });
+        it('should remove all objects from the cache in a list of ids', async function () {
+            const getData = await cache('Users').get({ id: [1, 2] });
+            assert.sameDeepMembers(getData, udata, 'does the data to be deleted exist?');
+            await cache('Users').remove({ id: [1, 2] });
+            const getData2 = await cache('Users').get({ id: [1, 2] });
+            assert.isEmpty(getData2, 'get returns an empty array, records removed');
+        });
+        it('should remove an item from an array property on an single cached object', async function () {
+            let getData = await cache('Users').get({ id: 1 });
+            assert.include(getData.following, 567, 'follower 567 is in the following array');
+            await cache('Users').removeFromArray({ id: 1 }, { following: 567 });
+            getData = await cache('Users').get({ id: 1 });
+            assert.notInclude(getData.following, 567, 'follower 567 is removed');
+        });
+        it('should remove all items in a list from an array property on an single cached object', async function () {
+            let getData = await cache('Users').get({ id: 1 });
+            assert.includeMembers(getData.following, [567, 654], 'follower 567 and 654 are in the following array');
+            await cache('Users').removeFromArray({ id: 1 }, { following: [567, 654] });
+            getData = await cache('Users').get({ id: 1 });
+            assert.notIncludeMembers(getData.following, [567, 654], 'follower 567 and 654 are removed');
+        });
+        it('should remove all items in a list from an array property on all cached object in a list', async function () {
+            let getData = await cache('Users').get({ id: 1 });
+            assert.includeMembers(getData.following, [567, 654], 'doc1: follower 567 and 654 are in the following array');
+            let getData2 = await cache('Users').get({ id: 2 });
+            assert.includeMembers(getData2.following, [567, 654], 'doc2: follower 567 and 654 are in the following array');
+
+            await cache('Users').removeFromArray({ id: [1, 2] }, { following: [567, 654] });
+            getData = await cache('Users').get({ id: 1 });
+            assert.notIncludeMembers(getData.following, [567, 654], 'doc1: follower 567 and 654 are removed');
+            getData2 = await cache('Users').get({ id: 2 });
+            assert.notIncludeMembers(getData2.following, [567, 654], 'doc2: follower 567 and 654 are removed');
+        });
+    });
 });
