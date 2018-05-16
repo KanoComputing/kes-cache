@@ -3,10 +3,10 @@
 /* eslint-disable func-names */
 const assert = require('chai').assert;
 const Cache = require('../index');
-const CI = require('../lib/CacheInstance');
+const Collection = require('../lib/Collection');
 
 describe('Cache', function () {
-    const cache = new Cache();
+    let cache;
     const udata = [{
         id: 1,
         username: 'user1',
@@ -29,15 +29,16 @@ describe('Cache', function () {
         followers: [16, 278, 480, 572],
     }];
     beforeEach(async function () {
+        cache = new Cache();
         cache.create('Users');
         await cache('Users').add(JSON.parse(JSON.stringify(udata)));
     });
     describe('Cache creation test', function () {
         it('returns a created cache by label', function () {
-            assert(cache('Users') instanceof CI);
+            assert(cache('Users') instanceof Collection);
         });
         it('throws an error if the label does not represent a cache', function () {
-            const err = Error('No model Shares registered');
+            const err = Error('No cache collection Shares registered');
             assert.throws(
                 () => {
                     try {

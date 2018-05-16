@@ -2,7 +2,7 @@
  * cache/index.js
  * Entry point to cache module
  */
-const CI = require('./lib/CacheInstance');
+const Collection = require('./lib/Collection');
 
 function Cache(options) {
     const caches = {};
@@ -11,7 +11,7 @@ function Cache(options) {
         if (cache) {
             return cache;
         }
-        throw new Error(`No model ${cacheName} registered`);
+        throw new Error(`No cache collection ${cacheName} registered`);
     }.bind({ _caches: caches });
     gc._options = options;
     gc._caches = caches;
@@ -20,7 +20,10 @@ function Cache(options) {
 }
 
 Cache.prototype.create = function createCache(cacheName, options) {
-    this._caches[cacheName] = new CI(cacheName, options);
+    if (this._caches[cacheName]) {
+        throw new Error(`Cache collection ${cacheName} already exists`);
+    }
+    this._caches[cacheName] = new Collection(cacheName, options);
 };
 
 module.exports = Cache;
