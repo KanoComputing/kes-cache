@@ -1,3 +1,5 @@
+<img src="https://world.kano.me/assets/images/kwc-masthead/kano-logo.svg" width="25%" height="25%">
+
 # Kano Services Middle Tier Caching
 A caching library for use in kano service development.
 
@@ -59,7 +61,7 @@ global.cache = new Cache(options);
 Data can be cached in "collections" to facilitate easy of searching and retrieving. Create a cache by passing a string that can be used to identify the cache when it is needed.
 ```js
 cache.create('myCache');
-cache('myCache');
+cache('myCache'); // returns a Collection object instance
 ```
 If you try to create a collection with a label that is already registered the `create` function will throw and error. Equally if you try to retrieve a collection that has not been created, an error is thrown.
 
@@ -134,14 +136,14 @@ cache('myCache').get({ id: 1 })
         /* data is the object with username user1 */
         /* If no data matches null is returned. */
     });
-/* The search values can be an array to match more than on object in the cache */
+/* The search values can be an array to match more than one object in the cache */
 cache('myCache').get({ id: [1, 3] })
     .then((objs) => {
         /* objs is an array containing data for user1 and user3 */
         /* if no objs match the search obj is equal to [] */
     });
 ```
-__Retrieving data from the cache is intended to be done using unique search fields. If the search field matches more than on object only the first will be returned__ This behaviour will only be updated if we find a use case for searching by non unique fields.
+__Retrieving data from the cache is intended to be done using unique search fields. If the search field matches more than one object only the first will be returned__ This behaviour will only be updated if we find a use case for searching by non unique fields.
 ### Update existing data
 Our cache strategy is to keep the cache up to date rather than invalidate data. To this end we provide an `Collection#update` function to update data objects that exist in a cache "collection".
 ```js
@@ -153,7 +155,8 @@ cache('myCache').update({ username: 'user1' }, { bio: 'I create art!' })
         console.log(getData.bio); // I create art!
     });
 
-/* Update more than one object in the cache at the same time. Uses the same search syntax as `Collection#get` */
+/** Update more than one object in the cache at the same time.
+  * Uses the same search syntax as `Collection#get` */
 cache('myCache').update({ username: ['user1', 'user2'] }, { bio: 'I create art!' })
     .then( async () => {
         const getData = await cache('myCache').get({ username: ['user1', 'user2'] });
@@ -175,7 +178,7 @@ cache('myCache').update({ username: 'user1' }, updateData)
     });
 ```
 #### Arrays
-The cache collection offers two functions for updating values in properties of the data that are arrays. `Collection#pushToArray` will always add an element to the array property and `Collection#addToSet`.  that will only add an element if it does not already exists in the array.
+The cache collection offers two functions for updating values in properties of the data that are arrays. `Collection#pushToArray` that will always add an element to the array property and `Collection#addToSet` that will only add an element if it does not already exists in the array.
 ```js
 // { id: 1, username: 'user1', bio: 'Hi, see my creations!', following: [567, 654, 23, 16], followers: [16, 2, 480, 572]}
 cache('myCache').pushToArray({ username: 'user1' }, { followers: 888 })
@@ -189,7 +192,7 @@ cache('myCache').pushToArray({ username: 'user1' }, { followers: 888 })
        console.log(getData.followers); // [16, 2, 480, 572, 888, 888]
     });
 
-/* Use addToSet if the array is intended to not have duplicates
+/** Use addToSet if the array is intended to not have duplicates
   * Note however that this does not remove duplicates that existed when the data was added */
 
 /* Add 888 once */
