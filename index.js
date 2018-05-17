@@ -5,25 +5,25 @@
 const Collection = require('./lib/Collection');
 
 function Cache(options) {
-    const caches = {};
-    const gc = function getCache(cacheName) {
-        const cache = this._caches[cacheName];
-        if (cache) {
-            return cache;
+    const collections = {};
+    const gc = function getCollection(collectionName) {
+        const collection = this._collections[collectionName];
+        if (collection) {
+            return collection;
         }
-        throw new Error(`No cache collection ${cacheName} registered`);
-    }.bind({ _caches: caches });
+        throw new Error(`No cache collection ${collectionName} registered`);
+    }.bind({ _collections: collections });
     gc._options = options;
-    gc._caches = caches;
+    gc._collections = collections;
     Object.setPrototypeOf(gc, Cache.prototype);
     return gc;
 }
 
-Cache.prototype.create = function createCache(cacheName, options) {
-    if (this._caches[cacheName]) {
-        throw new Error(`Cache collection ${cacheName} already exists`);
+Cache.prototype.create = function createCache(collectionName, options) {
+    if (this._collections[collectionName]) {
+        throw new Error(`Cache collection ${collectionName} already exists`);
     }
-    this._caches[cacheName] = new Collection(cacheName, options);
+    this._collections[collectionName] = new Collection(collectionName, options);
 };
 
 module.exports = Cache;
