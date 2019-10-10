@@ -1,4 +1,5 @@
-<img src="https://world.kano.me/assets/images/kwc-masthead/kano-logo.svg" width="25%" height="25%">
+# 🚧 Not used in production.
+Russell: "This is a library I wrote to use for middle tier caching on worldapi. I never got round to using it, but I guarantee it would increase the load the api could take by a huge amount. I will cover what it was meant to do in another section"
 
 # Kano Services Middle Tier Caching
 A caching library for use in kano service development.
